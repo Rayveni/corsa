@@ -1,0 +1,106 @@
+.main-container {
+    border: none !important;
+}
+
+.el-header {
+    background-color: #b3c0d1;
+    color: #333;
+    line-height: 60px;
+}
+
+.el-header h1 {
+    color: #FFF;
+    font-size: 200%;
+    margin: 0px;
+}
+
+.el-header h1 span {
+    color: #409EFF;
+}
+
+.el-aside {
+    color: #1f2f3d;
+    background-color: white;
+    width: 250px;
+    border: 1x solid #1f2f3d;
+}
+
+.el-aside ul {
+    list-style-type: none;
+    padding-left: 8px;
+    margin-top: 4px;
+}
+
+.el-aside button {
+    text-align: left;
+    width: 100%;
+    margin-bottom: 10px;
+    font-weight: 400;
+}
+
+
+td {
+    cursor: pointer;
+}
+
+.current-row {
+    color: #409EFF;
+    font-weight: 800;
+}
+
+.el-footer {
+    margin-top: 0px;
+}
+
+.el-table .cell {
+    word-break: break-word !important;
+}
+
+.el-table th.el-table__cell {
+    text-align: center; 
+}
+
+
+/* ----- */
+
+.el-container {
+    border: 1px solid #eee;
+}
+
+.main-header {
+    color: #FFF;
+    background-color: #409EFF;
+    border-color: #409EFF;
+    padding-top: 14px !important;
+}
+
+
+
+
+
+.el-footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.popup-dialog .el-dialog__body {
+    padding: 30px 20px;
+    padding-top: 5px;
+}
+
+.popup-dialog .el-steps {
+    margin-bottom: 30px;
+}
+
+table {
+    overflow-wrap: break-word;
+}
+
+.action-username {
+    margin-bottom: 2px;
+}
+
+.action-type {
+    margin-top: 1px;
+    color: grey;
+}

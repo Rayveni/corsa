@@ -1,0 +1,24 @@
+
+.login-container-row {
+    margin-top: 50px;
+}
+
+.login-container {
+    background-color: #e7ecf3;
+    padding: 10px;
+}
+
+.login-form {
+    padding-top: 20px;
+}
+
+.login-submit-btn {
+    width: 100%;
+    margin-top: 20px !important;
+}
+
+.login-error {
+    color: #F56C6C;
+    text-align: center;
+    font-size: 12px;
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reclassification</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link type="text/css" rel="stylesheet" href="assets/css/main.css"/>
+    <link type="text/css" rel="stylesheet" href="assets/css/login.css"/>
+    <link rel="stylesheet" href="assets/css/element-ui.css">
+</head>
+<body>
+    <div id="app">
+        <el-row type="flex" class="row-bg login-container-row" justify="center">
+            <el-col :xs="24" :sm="12" :md="10" :lg="6" :xl="4">
+                <header class="el-header" style="height: 60px;">
+                    <h1><i class="el-icon-user-solid"></i> <span>L</span>og in</h1>
+                </header>
+
+                <div class="login-container" v-loading="loading">
+                    <p v-if="loginError" class="login-error">
+                        <i class="el-icon-error"></i>
+                         К сожалению, вы ввели некорректные логин и пароль или произошла другая ошибка, попробуйте еще раз
+                    </p>
+
+                    <el-form ref="loginForm" :model="form" :rules="rules" label-width="120px" class="login-form">
+                        <el-form-item label="Username" prop="username">
+                        <el-input v-model="form.username"></el-input>
+                        </el-form-item>
+                        
+                        <el-form-item label="Password" prop="password">
+                            <el-input type="password" autocomplete="off" v-model="form.password"></el-input>
+                        </el-form-item>
+                
+                        <el-button type="primary" @click="onSubmit('loginForm')" class="login-submit-btn">Submit</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+            </el-col>
+        </el-row>
+    </div>
+
+	<script src="assets/js/vue.js"></script>
+	<script src="assets/js/element-ui.js"></script>
+	<script src="assets/js/ru-RU.js"></script>
+	<script src="assets/js/axios.min.js"></script>
+	<script src="assets/js/login.js"></script>
+</body>
+</html>

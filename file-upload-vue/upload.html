@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>upload corrs</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link type="text/css" rel="stylesheet" href="assets/css/main.css" />
+    <link type="text/css" rel="stylesheet" href="assets/css/upload.css" />
+    <link rel="stylesheet" href="assets/css/element-ui.css" />
+  </head>
+  <body>
+
+    <div id="app">
+      <el-row type="flex" class="row-bg upload-container-row" justify="center">
+        <el-col :xs="24" :sm="12" :md="10" :lg="6" :xl="4">
+          <div class="loader" id="loader">
+          </div>
+          <div class="upload-container" id="upload-container">
+            <el-form
+              ref="uploadForm"
+              :model="form"
+              :rules="rules"
+              label-width="120px"
+              class="upload-form">
+              <el-form-item label="Username" prop="username">
+                <el-input v-model="form.username"></el-input>
+              </el-form-item>
+              <el-form-item label="Отчёт" prop="report">
+                <el-input v-model="form.report"></el-input>
+              </el-form-item>
+
+
+            <el-form-item label="Режим загрузки" >
+              <select v-model="form.selected">
+                <option>Detailed&Aggregated</option> 
+                <option>Detailed&Aggregated&Buddah</option>
+                <option>Other</option>                
+              </select>
+            </el-form-item>
+              <el-form-item label="Запуск автоматической экстраполяции" >
+                <input type="checkbox" v-model="form.checked" />
+              </el-form-item>
+
+              
+              <el-form-item label="File">
+                <input
+                  type="file"
+                  accept=".xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                  id="file"
+                  ref="file"
+                  @change="handleFileUpload( $event )" />
+              </el-form-item>
+
+              <el-button
+                type="primary"
+                @click="onSubmit('uploadForm')"
+                class="login-submit-btn">
+                Submit
+              </el-button>
+            </el-form>
+          </div>
+        </el-col>
+      </el-row>
+      <el-row type="flex" class="row-bg upload-container-row" justify="center">
+        <el-col :xs="24" :sm="12" :md="10" :lg="6" :xl="4">
+          <div class="flashmessage" id="message_id">
+            
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+  </body>
+
+  <script src="assets/js/vue.js"></script>
+  <script src="assets/js/element-ui.js"></script>
+  <script src="assets/js/ru-RU.js"></script>
+  <script src="assets/js/axios.min.js"></script>
+  <script src="assets/js/upload.js"></script>
+</html>

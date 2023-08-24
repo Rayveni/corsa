@@ -1,0 +1,74 @@
+version: "3.91"
+services:
+  fast_api:
+    build:
+      context: ./
+      dockerfile: ./app/Dockerfile      
+    image: local_image/fast_api       
+    environment:
+      - TZ=${timezone}
+      - app_logs=/app/logs   
+      - log_level=${log_level}          
+      - authdb_config=[["user","${db_user}"],["database","${db_name}"],["host","${db_host}"],["port","${db_port}"],["password","${db_user_password}"]]
+    volumes: 
+      - app_code_source:/app/app
+      - logs-store:/app/logs 
+    command: >
+        bash -c "python server.py  "         
+    ports:
+      - "${app_ports}"
+   
+
+  postgres:
+    build:
+      context: ./db
+      dockerfile: Dockerfile   
+    container_name: corsdb    
+    hostname: ${db_host}   
+    command: postgres -c 'max_connections=50'
+    environment:
+      POSTGRES_DB: "${db_name}" 
+      POSTGRES_USER: "${db_user}"
+      POSTGRES_PASSWORD: "${db_user_password}"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    restart: unless-stopped
+    volumes:
+      - cors-data:/var/lib/postgresql/data 
+    ports:
+      - "${db_port}:${db_port}"        
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:7.5
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${pglogin}
+      - PGADMIN_DEFAULT_PASSWORD=${pgpassword}
+      - PGADMIN_LISTEN_PORT=${pgadmin_int}
+    ports:
+      - "${pgadmin_ext}:${pgadmin_int}"
+    restart: unless-stopped
+    volumes:
+      - pgadmin-datacors:/var/lib/pgadmin
+        
+
+volumes:
+  cors-data:
+  pgadmin-datacors:     
+  db-manager: 
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /db/manager 
+  app_code_source: 
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${app_code_source} 
+  logs-store: 
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${logs_dir} 

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reclassification</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link type="text/css" rel="stylesheet" href="assets/css/main.css"/>
+    <link rel="stylesheet" href="assets/css/element-ui.css">
+</head>
+<body>
+    <div id="app">
+        <el-container class="main-container">
+            <el-container>
+                <el-header>
+                    <h1><span>R</span>eclassification</h1>
+                </el-header>
+              
+                <el-main>
+                    <el-table
+                        v-loading="loadingTable"
+                        :data="elements.list"
+                        style="width: 100%"
+                        size="medium"
+                        highlight-current-row
+                        @current-change="elementsCurrentRowElementIdOnChange">
+
+                        <el-table-column
+                        prop="id"
+                        label="Key ID"
+                        width="75"
+                        fixed>
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="section"
+                        label="Section"
+                        width="250"
+                        >
+                        </el-table-column>
+                        
+                        <el-table-column
+                        prop="reclassName"
+                        label="Reclass Name"
+                        width="250"
+                        >
+                        </el-table-column>
+
+                        <el-table-column
+                        label="Valid From"
+                        width="150"
+                        >
+                            <template slot-scope="scope">
+                                <i class="el-icon-time"></i>
+                                <span style="margin-left: 10px">{{ scope.row.validFrom }}</span>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column
+                        label="Valid To"
+                        width="150"
+                        >
+                            <template slot-scope="scope">
+                                <i class="el-icon-time"></i>
+                                <span style="margin-left: 10px">{{ scope.row.validTo }}</span>
+                            </template> 
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="account"
+                        label="Account"
+                        width="150">
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="branch"
+                        label="Branch"
+                        width="150">
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="isin"
+                        label="ISIN"
+                        width="150"
+                        >
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="folder"
+                        label="Folder"
+                        width="150">
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="ras2"
+                        label="RAS2"
+                        width="150"
+                        >
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="idDeal"
+                        label="ID Deal"
+                        width="150">
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="quantity"
+                        label="Quantity">
+                        </el-table-column>
+
+                        <el-table-column
+                        label="Reclass Date"
+                        width="150">
+                            <template slot-scope="scope">
+                                <i class="el-icon-time"></i>
+                                <span style="margin-left: 10px">{{ scope.row.reclassDate }}</span>
+                            </template> 
+                        </el-table-column>
+
+                        <el-table-column
+                        label="Offer Date"
+                        width="150">
+                            <template slot-scope="scope">
+                                <i class="el-icon-time"></i>
+                                <span style="margin-left: 10px">{{ scope.row.offerDate }}</span>
+                            </template> 
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="initialAmount"
+                        label="Initial Amount"
+                        width="150">
+                        </el-table-column>
+
+                        <el-table-column
+                        label="Use Schedule">
+                            <template slot-scope="scope">
+                                <el-switch
+                                v-model="scope.row.useScheduleFlag"
+                                disabled>
+                                </el-switch>
+                            </template>
+                        </el-table-column>
+                    </el-table>             
+                </el-main>
+
+                <el-footer>
+                    <el-pagination
+                        :page-size="elements.pageSize"
+                        :pager-count="5"
+                        layout="prev, pager, next"
+                        :total="elements.total"
+                        @current-change="elementsCurrentPageOnChange">
+                    </el-pagination>
+                </el-footer>
+            </el-container>
+
+            <el-aside>
+                <ul>
+                    <li>
+                        <el-button 
+                        type="primary" 
+                        icon="el-icon-document-add" 
+                        @click="addNewElementDialog.dialogIsVisible = true" 
+                        size="medium">
+                        Добавить элемент</el-button>
+                    </li>
+                    <li>
+                        <el-button 
+                        type="danger" 
+                        :disabled="elementDeleteIsDisabledBtn" 
+                        @click="initElementDeleteDialog()" 
+                        icon="el-icon-delete" 
+                        size="medium">
+                        Исключить элемент</el-button>
+                    </li>
+                    <li>
+                        <el-button 
+                        type="warning" 
+                        :disabled="elementGetInfoIsDisabledBtn" 
+                        @click="initElementInfoDialog()" 
+                        icon="el-icon-view" 
+                        size="medium">
+                        Просмотреть информацию</el-button>
+                    </li>
+                    <li>
+                        <el-button 
+                        @click="logout()" 
+                        icon="el-icon-switch-button" 
+                        size="medium">
+                        Logout</el-button>
+                    </li>
+                </ul>
+            </el-aside>
+
+            <el-dialog title="Добавление нового элемента" :visible.sync="addNewElementDialog.dialogIsVisible" class="popup-dialog">
+                <el-steps :active="addNewElementDialog.step" align-center>
+                    <el-step title="Шаг 1" description="Новый элемент"></el-step>
+                    <el-step title="Шаг 2" description="Протокол действий"></el-step>
+                </el-steps>
+
+                <el-form v-show="addNewElementDialog.step == 1" id="addForm" ref="addForm" :model="addNewElementDialog.addForm.model" :rules="addNewElementDialog.addForm.rules" size="medium" label-position="left" label-width="120px">   
+                    <el-form-item label="Section" prop="section" class="formLabel" >
+                        <el-input type="textarea" show-word-limit maxlength="2000" :rows="10" v-model="addNewElementDialog.addForm.model.section"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="Reclass Name" prop="reclassName" class="formLabel">
+                        <el-input type="textarea" show-word-limit maxlength="2000" :rows="10" v-model="addNewElementDialog.addForm.model.reclassName"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="Valid From" prop="validFrom" class="formLabel">
+                        <el-date-picker :disabled="addNewElementDialog.validFromIsDisabled" type="date" value-format="yyyy-MM-dd" placeholder="Выберите дату" v-model="addNewElementDialog.addForm.model.validFrom" format="dd.MM.yyyy" style="width: 100%;"></el-date-picker>
+                    </el-form-item>
+
+                    <el-form-item label="Valid To" prop="validTo" class="formLabel">
+                        <el-date-picker type="date" value-format="yyyy-MM-dd" placeholder="Выберите дату" v-model="addNewElementDialog.addForm.model.validTo" format="dd.MM.yyyy" style="width: 100%;"></el-date-picker>
+                    </el-form-item>
+
+                    <el-form-item label="Account" prop="account" class="formLabel">
+                        <el-input v-model="addNewElementDialog.addForm.model.account"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="Branch" prop="branch" class="formLabel">
+                        <el-input v-model="addNewElementDialog.addForm.model.branch"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="ISIN" prop="isin" class="formLabel">
+                        <el-input v-model="addNewElementDialog.addForm.model.isin" maxlength="15"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="Folder" prop="folder" class="formLabel">
+                        <el-input v-model="addNewElementDialog.addForm.model.folder"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="RAS2" prop="ras2" class="formLabel">
+                        <!-- <el-input v-model="addNewElementDialog.addForm.model.ras2" maxlength="5"></el-input> -->
+                        <el-select v-model="addNewElementDialog.addForm.model.ras2" filterable placeholder="Выберите">
+                            <el-option
+                              v-for="item in addNewElementDialog.balanceNums"
+                              :key="item"
+                              :label="item"
+                              :value="item">
+                            </el-option>
+                        </el-select>
+
+                    </el-form-item>
+
+                    <el-form-item label="ID Deal" prop="idDeal" class="formLabel">
+                        <el-input v-model="addNewElementDialog.addForm.model.idDeal"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="Quantity" prop="quantity" class="formLabel">
+                        <el-input-number v-model="addNewElementDialog.addForm.model.quantity" :precision="0" :step="1" style="width: 100%;"></el-input-number>
+                    </el-form-item>
+
+                    <el-form-item label="Reclass Date" prop="reclassDate" class="formLabel">
+                        <el-date-picker type="date" value-format="yyyy-MM-dd" placeholder="Выберите дату" v-model="addNewElementDialog.addForm.model.reclassDate" format="dd.MM.yyyy" style="width: 100%;"></el-date-picker>
+                    </el-form-item>
+
+                    <el-form-item label="Offer Date" prop="offerDate" class="formLabel">
+                        <el-date-picker type="date" value-format="yyyy-MM-dd" placeholder="Выберите дату" v-model="addNewElementDialog.addForm.model.offerDate" format="dd.MM.yyyy" style="width: 100%;"></el-date-picker>
+                    </el-form-item>
+
+                    <el-form-item label="Initial Amount" prop="initialAmount" class="formLabel">
+                        <el-input-number v-model="addNewElementDialog.addForm.model.initialAmount" :precision="0" :step="1" style="width: 100%;"></el-input-number>
+                    </el-form-item>
+
+                    <el-form-item label="" prop="useScheduleFlag">
+                        <el-checkbox v-model="addNewElementDialog.addForm.model.useScheduleFlag">Use Schedule</el-checkbox>
+                      </el-form-item>
+                </el-form>
+
+                <el-form 
+                v-show="addNewElementDialog.step == 2" 
+                id="addFormActionJournal" 
+                ref="addFormActionJournal" 
+                :model="addNewElementDialog.actionJournalForm.model" 
+                :rules="addNewElementDialog.actionJournalForm.rules" 
+                size="medium" 
+                label-position="left" 
+                label-width="120px">   
+                    <el-form-item label="Reasons" prop="reason" class="formLabel">
+                        <el-input type="textarea" show-word-limit maxlength="2000" :rows="10" v-model="addNewElementDialog.actionJournalForm.model.reason"></el-input>
+                    </el-form-item>                    
+                </el-form>
+                
+                <span slot="footer" class="dialog-footer">
+                    <el-button v-if="addNewElementDialog.step == 2" @click="addNewElementDialog.step--" size="medium">Назад</el-button>
+                    
+                    <el-button v-if="addNewElementDialog.step == 1" type="primary" @click="submitAddFormStep1()" size="medium">Далее</el-button>
+                    <el-button v-else type="primary" @click="submitAddFormStep2()" size="medium">Сохранить</el-button>
+                    
+                    <el-popconfirm
+                        confirm-button-text="Сбросить"
+                        cancel-button-text="Отменить"
+                        icon="el-icon-info"
+                        icon-color="red"
+                        title="Все поля формы будут очищены, вы уверены?"
+                        @confirm="resetAddForms()">
+                        <el-button slot="reference" size="medium">Сбросить</el-button>
+                    </el-popconfirm>
+                </span>
+            </el-dialog>
+
+            <el-dialog title="Исключение элемента" :visible.sync="deleteElementDialog.dialogIsVisible" class="popup-dialog">
+                <el-steps :active="deleteElementDialog.step" align-center>
+                    <el-step title="Шаг 1" description="Дата исключения"></el-step>
+                    <el-step title="Шаг 2" description="Протокол действий"></el-step>
+                </el-steps>
+            
+                <el-form v-show="deleteElementDialog.step == 1" id="deleteForm" ref="deleteForm" :model="deleteElementDialog.deleteForm.model" :rules="deleteElementDialog.deleteForm.rules" size="medium" label-position="left" label-width="120px">   
+                    <el-form-item label="Valid To" prop="validTo" class="formLabel">
+                        <el-date-picker type="date" value-format="yyyy-MM-dd" placeholder="Выберите дату" v-model="deleteElementDialog.deleteForm.model.validTo" format="dd.MM.yyyy" style="width: 100%;"></el-date-picker>
+                    </el-form-item>
+                </el-form>
+            
+                <el-form v-show="deleteElementDialog.step == 2" id="deleteFormActionJournal" ref="deleteFormActionJournal" :model="deleteElementDialog.actionJournalForm.model" :rules="deleteElementDialog.actionJournalForm.rules" size="medium" label-position="left" label-width="120px">   
+                    <el-form-item label="Reasons" prop="reason" class="formLabel">
+                        <el-input type="textarea" show-word-limit maxlength="2000" :rows="10" v-model="deleteElementDialog.actionJournalForm.model.reason"></el-input>
+                    </el-form-item>
+                </el-form>
+                
+                <span slot="footer" class="dialog-footer">
+                    <el-button v-if="deleteElementDialog.step == 2" @click="deleteElementDialog.step--" size="medium">Назад</el-button>
+                    
+                    <el-button v-if="deleteElementDialog.step == 1" type="primary" @click="submitDeleteFormStep1()" size="medium">Далее</el-button>
+                    <el-button v-else type="primary" @click="submitDeleteFormStep2()" size="medium">Сохранить</el-button>
+                </span>
+            </el-dialog>
+
+            <el-dialog title="Информация об элементе" :visible.sync="infoElementDialog.dialogIsVisible" class="popup-dialog">
+                <el-timeline> 
+                    <template v-for="action in infoElementDialog.actions">
+                        <el-timeline-item :timestamp="action.date" placement="top">
+                            <el-card>
+                                <h4 class="action-username"><span style="font-weight: 200">Пользователь:</span> {{ action.userName }}</h4>
+                                <p class="action-type">{{ action.type }}</p>
+                                <p>{{ action.reason }}</p>
+                            </el-card>
+                        </el-timeline-item>
+                    </template>
+                </el-timeline>
+            </el-dialog>
+
+        </el-container>
+    </div>
+
+	<script src="assets/js/vue.js"></script>
+	<script src="assets/js/element-ui.js"></script>
+	<script src="assets/js/ru-RU.js"></script>
+	<script src="assets/js/axios.min.js"></script>
+	<script src="assets/js/main.js"></script>
+</body>
+</html>
