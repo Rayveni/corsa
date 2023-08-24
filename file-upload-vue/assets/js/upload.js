@@ -44,7 +44,6 @@ new Vue({
     },
 
     onSubmit: function (formName) {
-      console.log(this.form.selected)
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let formData = new FormData();

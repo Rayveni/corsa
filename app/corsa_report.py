@@ -93,7 +93,7 @@ class corsa_report:
 
         if _err_flg > 0:
             await self.UpdLogOracle("Некорректные проводки")
-            # нужно раскомментить(сделано для отладки)await self.OracleClearCurrents
+            await self.OracleClearCurrents()
 
     async def OracleClearCurrents(self):
         db_conn = db_manager(**self.db_conn_config)
