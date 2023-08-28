@@ -35,14 +35,15 @@ class corsa_report:
                     [f'Отсутсвует лист {source_sheet}в книге'])
                 return None
             ws = workbook[source_sheet]
+            # загружаем данные из excel
             await self.perform_aents_common(ws)
             await self.recalc_simple()
 
         db_conn = db_manager(**self.db_conn_config)
         await db_conn.transaction(read_sql('endUploadCorrs_Oracle').format(user=self.user))
         await self.CheckCCorsOracle()
-        await self.InitCorsaStep2()  # заглушка
-        await self.AutoCorrectionsOracle()  # заглушка
+        await self.InitCorsaStep2()  
+        await self.AutoCorrectionsOracle()  
         await self.UpdLogOracle("Ок")
 
         """      
@@ -68,12 +69,87 @@ class corsa_report:
         """
 
     async def InitCorsaStep2(self):
-        # похоже никаких нужных таблиц не заполняем
-        pass
+        db_conn = db_manager(**self.db_conn_config)
+        await db_conn.transaction(read_sql('InitCorsaStep2').format(user=self.user,report_id=self.report_id))
+        await self.OracleClearCurrents()
+        db_conn = db_manager(**self.db_conn_config)
+        await db_conn.transaction(read_sql('InitCorsaStep2_log1').format(load_id=self.load_id,user=self.user,report_id=self.report_id))
+        
 
     async def AutoCorrectionsOracle(self):
-        # похоже никаких нужных таблиц не заполняем
-        pass
+        db_conn = db_manager(**self.db_conn_config)
+        data = await db_conn.run_sql_query(read_sql('auto_corr_data').format(report_id=self.report_id), execute=False)
+        """
+        переводим результат в словарь (в отличие от изначального алгоритма) где использовался упорядоченный массив
+        [[0.1, 0.0],
+        [1, 0.0],
+        [2, 0.0],
+        [3, 0.0],
+        [4, 0.0],
+        [5, 0.0],
+        [6, 0.0],
+        [7, 1.11],
+        [8, 11.0]]
+        получаем результат 
+        {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0, 6: 0.0, 7: 1.11, 8: 11.0}
+        !!!!!!!!!!!!!!!!ключи нужно переименовать на адекватнын
+        """
+        data={float(_row['nrow']):float(_row['sum_vl']) for _row in data}
+        
+        PnL = data[0.1]+data[1]
+        PnLwT = PnL - data[2]
+        DT_4_2n3 = round( -0.2 * PnLwT, 0) - data[3] - data[4]
+        DT_4_2n1 = -DT_4_2n3
+        DT_4_2n2 = 0
+        AJE_0n1 = -(data[5] + DT_4_2n1)
+        AJE_0n2 = -(data[6] + DT_4_2n2)
+        AJE_0n3 = -(AJE_0n1 + AJE_0n2) if AJE_0n1 + AJE_0n2 < 0 else 0  
+        AJE_0n4 = -(AJE_0n1 + AJE_0n2) if AJE_0n1 + AJE_0n2 > 0 else 0  
+        #AJE_0n5 = -rs.Fields(1) 
+        #индексы закончились!!!!! предполагаю что начинаем заново
+        AJE_0n5 = -data[7] 
+        AJE_0n6 = -data[8] 
+        AJE_0n7 = -(AJE_0n5 + AJE_0n6) if AJE_0n5 + AJE_0n6 < 0 else 0 
+        AJE_0n8 = -(AJE_0n5 + AJE_0n6) if AJE_0n5 + AJE_0n6 > 0 else 0 
+        AJE_0n15 = (AJE_0n4 + AJE_0n8) if AJE_0n3 + AJE_0n7 > -(AJE_0n4 + AJE_0n8) else -(AJE_0n3 + AJE_0n7)
+        AJE_0n16 = -(AJE_0n4 + AJE_0n8) if AJE_0n3 + AJE_0n7 > -(AJE_0n4 + AJE_0n8) else  (AJE_0n3 + AJE_0n7)
+        await self.UploadLineOracle_oo4o("10" + "# 4 [DT] Deferred Tax: Deferred Tax",
+                                         "_", 
+                                         16777215,
+                                         "",
+                                         "_", 
+                                         "# 4 [DT] Deferred Tax: Deferred Tax", 
+                                         2, 
+                                         "30001", 
+                                         str(16711680))
+
+
+        await self.UploadLineOracle_oo4o("11110400", "АВТОМАТИЧЕСКАЯ", DT_4_2n1, "N", "DT_4_2n1", "# 4 [DT] Deferred Tax: Deferred Tax", 1, "30002", str(0))
+        await self.UploadLineOracle_oo4o("21110400", "АВТОМАТИЧЕСКАЯ", DT_4_2n2, "N", "DT_4_2n2", "# 4 [DT] Deferred Tax: Deferred Tax", 1, "30003", str(0))
+        await self.UploadLineOracle_oo4o("59020200", "АВТОМАТИЧЕСКАЯ", DT_4_2n3, "N", "DT_4_2n3", "# 4 [DT] Deferred Tax: Deferred Tax", 1, "30004", str(0))
+
+        await self.UploadLineOracle_oo4o("11110300", "АВТОМАТИЧЕСКАЯ", AJE_0n1, "N", "AJE_0n1", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30005", str(0))
+        await self.UploadLineOracle_oo4o("21110300", "АВТОМАТИЧЕСКАЯ", AJE_0n2, "N", "AJE_0n2", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30006", str(0))
+        await self.UploadLineOracle_oo4o("11110300", "АВТОМАТИЧЕСКАЯ", AJE_0n3, "N", "AJE_0n3", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30007", str(0))
+        await self.UploadLineOracle_oo4o("21110300", "АВТОМАТИЧЕСКАЯ", AJE_0n4, "N", "AJE_0n4", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30008", str(0))
+
+        await self.UploadLineOracle_oo4o("10" + "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", "_", 16777215, "", "_", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 2, "30009", str(16711680))
+
+        await self.UploadLineOracle_oo4o("11110300", "АВТОМАТИЧЕСКАЯ", AJE_0n5, "N", "AJE_0n5", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30010", str(0))
+        await self.UploadLineOracle_oo4o("21110300", "АВТОМАТИЧЕСКАЯ", AJE_0n6, "N", "AJE_0n6", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30011", str(0))
+        await self.UploadLineOracle_oo4o("11110300", "АВТОМАТИЧЕСКАЯ", AJE_0n7, "N", "AJE_0n7", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30012", str(0))
+        await self.UploadLineOracle_oo4o("21110300", "АВТОМАТИЧЕСКАЯ", AJE_0n8, "N", "AJE_0n8", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30013", str(0))
+
+        await self.UploadLineOracle_oo4o("11110300", "АВТОМАТИЧЕСКАЯ", AJE_0n15, "N", "AJE_0n15", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30014", str(0))
+        await self.UploadLineOracle_oo4o("21110300", "АВТОМАТИЧЕСКАЯ", AJE_0n16, "N", "AJE_0n16", "# 0 [AJE] Deferred Tax:  Netting of Deferred Assets and Deferred Liability", 1, "30015", str(0))
+
+        db_conn = db_manager(**self.db_conn_config)
+        await db_conn.transaction(read_sql('AutoCorrectionsOracle').format(user=self.user))
+        await self.OracleClearCurrents()
+        
+        db_conn = db_manager(**self.db_conn_config)
+        await db_conn.transaction(read_sql('AutoCorrectionsOracle_log').format(report_id=self.report_id,load_id=self.load_id))
+        
 
     async def CheckCCorsOracle(self):
         rs, _err_flg = {}, 0
@@ -99,11 +175,6 @@ class corsa_report:
         db_conn = db_manager(**self.db_conn_config)
         await db_conn.run_sql_query(read_sql('OracleClearCurrents'), query_args=[self.user], execute=True)
 
-    async def InitCorsaStep2(self):
-        pass
-
-    async def AutoCorrectionsOracle(self):
-        pass
 
     async def recalc_simple(self):
         db_conn = db_manager(**self.db_conn_config)
