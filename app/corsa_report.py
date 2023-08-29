@@ -198,6 +198,7 @@ class corsa_report:
             # заглушка для диалогового окна  CORSA_RECALCSIMPLE
         db_conn = db_manager(**self.db_conn_config)
         sql = read_sql('CORSA_RECALCSIMPLE').format(user=self.user)
+        print(sql)
         await db_conn.transaction(sql)
 
     async def add_log_corsa(self, status: str = '') -> None:

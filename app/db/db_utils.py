@@ -5,7 +5,7 @@ def get_db_connection_config()->dict:
         data= f.read()
     return loads(data)
 
-def read_sql(file_name:str)->str:
-    with open(f'db/sql/{file_name}.sql','r') as f:
+def read_sql(file_name:str, encoding='utf-8')->str:
+    with open(f'db/sql/{file_name}.sql','r',encoding=encoding) as f:
         sql=f.read()
     return sql
